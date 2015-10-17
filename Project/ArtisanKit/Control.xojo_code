@@ -72,9 +72,9 @@ Inherits Canvas
 		  Dim Highlighted As Boolean
 		  If Self.Enabled Then
 		    #if TargetCocoa
-		      Declare Function IsMainWindow Lib "Cocoa.framework" Selector "isMainWindow" (Target As WindowPtr) As Boolean
-		      Declare Function IsKeyWindow Lib "Cocoa.framework" Selector "isKeyWindow" (Target As WindowPtr) As Boolean
-		      Highlighted = IsKeyWindow(Self.TrueWindow) Or IsMainWindow(Self.TrueWindow)
+		      Declare Function IsMainWindow Lib "Cocoa.framework" Selector "isMainWindow" (Target As Integer) As Boolean
+		      Declare Function IsKeyWindow Lib "Cocoa.framework" Selector "isKeyWindow" (Target As Integer) As Boolean
+		      Highlighted = IsKeyWindow(Self.TrueWindow.Handle) Or IsMainWindow(Self.TrueWindow.Handle)
 		    #else
 		      Highlighted = True
 		    #endif

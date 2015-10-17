@@ -32,22 +32,42 @@ Protected Module ArtisanKit
 		    Dim FontObject As Ptr
 		    If G.TextFont = "SmallSystem" And G.TextSize = 0 Then
 		      If G.Bold Then
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #if Target64Bit
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		        #else
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #endif
 		        FontObject = SystemFontOfSize(NSFont,11)
 		      Else
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #if Target64Bit
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		        #else
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #endif
 		        FontObject = SystemFontOfSize(NSFont,11)
 		      End If
 		    ElseIf G.TextFont = "System" Or G.TextFont = "SmallSystem" Then
 		      If G.Bold Then
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #if Target64Bit
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		        #else
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #endif
 		        FontObject = SystemFontOfSize(NSFont,G.TextSize)
 		      Else
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #if Target64Bit
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		        #else
+		          Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		        #endif
 		        FontObject = SystemFontOfSize(NSFont,G.TextSize)
 		      End If
 		    Else
-		      Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Single) As Ptr
+		      #if Target64Bit
+		        Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Double) As Ptr
+		      #else
+		        Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Single) As Ptr
+		      #endif
 		      FontObject = FontWithName(NSFont,G.TextFont,G.TextSize)
 		    End If
 		    
