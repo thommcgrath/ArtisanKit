@@ -17,8 +17,8 @@ Protected Module ArtisanKit
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Function CapHeight(Extends G As Graphics) As Single
+	#tag Method, Flags = &h0, CompatibilityFlags = (TargetConsole and (Target32Bit or Target64Bit)) or  (TargetWeb and (Target32Bit or Target64Bit)) or  (TargetDesktop and (Target32Bit or Target64Bit)) or  (TargetIOS and (Target32Bit or Target64Bit))
+		Function CapHeight(Extends G As Graphics) As Double
 		  #if TargetCocoa
 		    Declare Function objc_getClass Lib "Cocoa.framework" (ClassName As CString) As Ptr
 		    Dim NSFont As Ptr = objc_getClass("NSFont")
@@ -78,7 +78,11 @@ Protected Module ArtisanKit
 		      Return G.TextAscent * 0.8
 		    End If
 		    
-		    Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Single
+		    #if Target64Bit
+		      Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Double
+		    #else
+		      Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Single
+		    #endif
 		    Return GetCapHeight(FontObject)
 		  #elseif TargetWin32
 		    Return G.TextAscent * 0.75
