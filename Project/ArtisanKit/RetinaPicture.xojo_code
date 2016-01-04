@@ -147,6 +147,18 @@ Inherits Picture
 			Type="Integer"
 		#tag EndViewProperty
 		#tag ViewProperty
+			Name="Type"
+			Group="Behavior"
+			Type="Types"
+			EditorType="Enum"
+			#tag EnumValues
+				"0 - Image"
+				"1 - VectorImage"
+				"2 - Bitmap"
+				"3 - ImmutableBitmap"
+			#tag EndEnumValues
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="VerticalResolution"
 			Group="Behavior"
 			InitialValue="0"

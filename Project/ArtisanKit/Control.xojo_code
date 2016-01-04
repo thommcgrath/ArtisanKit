@@ -100,7 +100,11 @@ Inherits Canvas
 		      // Finished
 		      Value = Details.EndValue
 		    Else
-		      Value = (ChangeInValue * Sin((Elapsed / Details.Duration) * (Self.PI / 2))) + Details.StartValue
+		      If Details.Ease Then
+		        Value = (ChangeInValue * Sin((Elapsed / Details.Duration) * (Self.PI / 2))) + Details.StartValue
+		      Else
+		        Value = (ChangeInValue * (Elapsed / Details.Duration)) + Details.StartValue
+		      End If
 		      If Details.EndValue > Details.StartValue Then
 		        Value = Min(Value,Details.EndValue)
 		      ElseIf Details.EndValue < Details.StartValue Then
@@ -109,11 +113,11 @@ Inherits Canvas
 		        Value = Details.StartValue
 		      End If
 		    End If
-		    RaiseEvent AnimationStep(Key,Value)
-		    Self.Invalidate
 		    If Value = Details.EndValue Then
 		      Self.mAnimations.Remove(Key)
 		    End If
+		    RaiseEvent AnimationStep(Key,Value,Value = Details.EndValue)
+		    Self.Invalidate
 		  Next
 		  If Self.mAnimations.Count = 0 Then
 		    RemoveHandler mAnimationTimer.Action, WeakAddressOf AnimationTimerAction
@@ -147,7 +151,7 @@ Inherits Canvas
 		  Dim Details As AnimationDetails = Self.mAnimations.Value(Key)
 		  Self.mAnimations.Remove(Key)
 		  If Finish Then
-		    RaiseEvent AnimationStep(Key,Details.EndValue)
+		    RaiseEvent AnimationStep(Key,Details.EndValue,True)
 		    Self.Invalidate
 		  End If
 		End Sub
@@ -216,7 +220,7 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Sub StartAnimation(Key As String, StartValue As Double, EndValue As Double, Duration As Double)
+		Protected Sub StartAnimation(Key As String, StartValue As Double, EndValue As Double, Duration As Double, Ease As Boolean = True)
 		  If Self.mAnimations = Nil Then
 		    Self.mAnimations = New Dictionary
 		  End If
@@ -226,6 +230,7 @@ Inherits Canvas
 		  Details.EndValue = EndValue
 		  Details.StartTime = Microseconds
 		  Details.Duration = Duration
+		  Details.Ease = Ease
 		  
 		  Self.mAnimations.Value(Key) = Details
 		  
@@ -245,7 +250,7 @@ Inherits Canvas
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event AnimationStep(Key As String, Value As Double)
+		Event AnimationStep(Key As String, Value As Double, Finished As Boolean)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
@@ -343,7 +348,8 @@ Inherits Canvas
 		StartValue As Double
 		  EndValue As Double
 		  StartTime As Double
-		Duration As Double
+		  Duration As Double
+		Ease As Boolean
 	#tag EndStructure
 
 
