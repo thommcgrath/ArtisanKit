@@ -1,5 +1,9 @@
 # Version History
 
+## Version 1.0.2 - January 26th, 2016
+
+- Fixed ArtisanKit.Control.CancelAnimation's Key As Text parameter. This should have been Key As String. As a result, it was not possible to cancel animations.
+
 ## Version 1.0.1 - January 3rd, 2016
 
 - It is now possible to start or update an animation from the ArtisanKit.Control.AnimationStep event. Previously, if the animation was on the final step, a newly started animation would be stopped too. This essentially prevented looping animations.

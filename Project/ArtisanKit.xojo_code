@@ -284,12 +284,12 @@ Protected Module ArtisanKit
 
 	#tag Note, Name = Documentation
 		
-		Documentation can be found at http://docs.thezaz.com/artisankit/1.0.0
+		Documentation can be found at http://docs.thezaz.com/artisankit/1.0.2
 	#tag EndNote
 
 	#tag Note, Name = Version
 		
-		1.0.0
+		1.0.2
 	#tag EndNote
 
 

@@ -143,7 +143,7 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Sub CancelAnimation(Key As Text, Finish As Boolean = False)
+		Protected Sub CancelAnimation(Key As String, Finish As Boolean = False)
 		  If Self.mAnimations = Nil Or Self.mAnimations.HasKey(Key) = False Then
 		    Return
 		  End If
