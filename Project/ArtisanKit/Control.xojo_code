@@ -40,13 +40,14 @@ Inherits Canvas
 
 	#tag Event
 		Sub Open()
+		  Self.NeedsFullKeyboardAccessForFocus = True
 		  RaiseEvent Open
 		  Self.DoubleBuffer = TargetWin32
 		  Self.EraseBackground = Not Self.DoubleBuffer
 		  #if XojoVersion >= 2013.04
 		    Self.Transparent = Self.EraseBackground
 		  #endif
-		  Self.TabStop = Self.TabStop And Self.AcceptFocus And ArtisanKit.FullKeyboardAccessEnabled
+		  Self.TabStop = (Self.TabStop Or Self.AcceptFocus) And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
 		End Sub
 	#tag EndEvent
 
@@ -130,14 +131,15 @@ Inherits Canvas
 	#tag Method, Flags = &h1
 		Protected Sub BeginFocusRing(G As Graphics)
 		  #if TargetCocoa
-		    Declare Sub NSSetFocusRingStyle Lib "Cocoa.framework" (Placement As Integer)
-		    Declare Sub CGContextBeginTransparencyLayer Lib "Cocoa.framework" (Context As Integer, AuxInfo As Integer)
-		    
 		    Const NSFocusRingAbove = 2
 		    
-		    Dim Context As Integer = G.Handle(G.HandleTypeCGContextRef)
+		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
+		    Declare Sub SaveGraphicsState Lib "Cocoa.framework" Selector "saveGraphicsState" (Target As Ptr)
+		    Declare Sub NSSetFocusRingStyle Lib "Cocoa.framework" (Placement As Integer)
+		    
+		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
+		    SaveGraphicsState(GraphicsContextClass)
 		    NSSetFocusRingStyle(NSFocusRingAbove)
-		    CGContextBeginTransparencyLayer(Context,0)
 		  #endif
 		End Sub
 	#tag EndMethod
@@ -160,10 +162,11 @@ Inherits Canvas
 	#tag Method, Flags = &h1
 		Protected Sub EndFocusRing(G As Graphics)
 		  #if TargetCocoa
-		    Declare Sub CGContextEndTransparencyLayer Lib "Cocoa.framework" (Context As Integer)
+		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
+		    Declare Sub RestoreGraphicsState Lib "Cocoa.framework" Selector "restoreGraphicsState" (Target As Ptr)
 		    
-		    Dim Context As Integer = G.Handle(G.HandleTypeCGContextRef)
-		    CGContextEndTransparencyLayer(Context)
+		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
+		    RestoreGraphicsState(GraphicsContextClass)
 		  #endif
 		End Sub
 	#tag EndMethod
@@ -333,6 +336,10 @@ Inherits Canvas
 
 	#tag Property, Flags = &h21
 		Private mLastPaintWidth As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		NeedsFullKeyboardAccessForFocus As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

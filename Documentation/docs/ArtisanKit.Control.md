@@ -34,6 +34,9 @@ The `Backdrop` property has been shadowed and cannot be set. This control is for
 <pre id="property.hasfocus"><span style="font-family: 'source-code-pro', 'menlo', 'courier', monospace; color: #000000;">HasFocus <span style="color: #0000FF;">As</span> <span style="color: #0000FF;">Boolean</span> = <span style="color: #0000FF;">False</span></span></pre>
 Indicates wether or not the control has the focus. Setting to `True` will grab the focus, setting to `False` pushes the focus to the parent window.
 
+<pre id="property.needsfullkeyboardaccessforfocus"><span style="font-family: 'source-code-pro', 'menlo', 'courier', monospace; color: #000000;">NeedsFullKeyboardAccessForFocus <span style="color: #0000FF;">As</span> <span style="color: #0000FF;">Boolean</span> = <span style="color: #0000FF;">True</span></span></pre>
+Some controls, such as text fields, should be able to get the focus without the user's Full Keyboard Access being enabled. Other controls, such as check boxes, should only get the focus if Full Keyboard Access is enabled. Set to false to accept focus even if Full Keyboard Access is disabled.
+
 <pre id="property.scrollspeed"><span style="font-family: 'source-code-pro', 'menlo', 'courier', monospace; color: #000000;">ScrollSpeed <span style="color: #0000FF;">As</span> <span style="color: #0000FF;">Integer</span> = <span style="color: #336698;">20</span></span></pre>
 The number of pixels a single "step" of a traditional scroll wheel should move the content. This value is identical to the `ScrollBar.LineHeight` property.
 
