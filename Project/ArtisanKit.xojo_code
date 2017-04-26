@@ -260,6 +260,10 @@ Protected Module ArtisanKit
 
 	#tag Method, Flags = &h0
 		Function ScalingFactor(Extends G As Graphics) As Single
+		  #if XojoVersion >= 2016.04
+		    Return G.ScaleX
+		  #endif
+		  
 		  #if TargetCocoa
 		    #if Target64Bit
 		      Dim UserSize, DeviceSize As CGSize64
