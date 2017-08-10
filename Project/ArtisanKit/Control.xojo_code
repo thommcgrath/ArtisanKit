@@ -61,8 +61,8 @@ Inherits Canvas
 		  
 		  If Not Self.EraseBackground Then
 		    Dim BackgroundColor As Color
-		    If Self.TrueWindow.HasBackColor Then
-		      BackgroundColor = Self.TrueWindow.BackColor
+		    If Self.Window <> Nil And Self.Window.HasBackColor Then
+		      BackgroundColor = Self.Window.BackColor
 		    Else
 		      BackgroundColor = FillColor
 		    End If
@@ -473,6 +473,11 @@ Inherits Canvas
 			Group="ID"
 			Type="String"
 			EditorType="String"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="NeedsFullKeyboardAccessForFocus"
+			Group="Behavior"
+			Type="Boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ScrollSpeed"
