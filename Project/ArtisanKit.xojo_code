@@ -226,13 +226,21 @@ Protected Module ArtisanKit
 		    SourcePortion = New REALbasic.Rect(0,0,Source.Width,Source.Height)
 		  End If
 		  
+		  Dim SourceWidth, SourceHeight As Integer
+		  SourceWidth = SourcePortion.Width
+		  SourceHeight = SourcePortion.Height
+		  If Not (Source IsA ArtisanKit.RetinaPicture) Then
+		    SourceWidth = SourceWidth / Factor
+		    SourceHeight = SourceHeight / Factor
+		  End If
+		  
 		  Dim X, Y As Integer
-		  For X = 0 To Area.Width Step Source.Width / Factor
-		    For Y = 0 To Area.Height Step Source.Height / Factor
+		  For X = 0 To Area.Width Step SourceWidth
+		    For Y = 0 To Area.Height Step SourceHeight
 		      If Source IsA ArtisanKit.RetinaPicture Then
-		        Destination.DrawRetinaPicture(ArtisanKit.RetinaPicture(Source),X,Y,SourcePortion.Width,SourcePortion.Height,SourcePortion.Left,SourcePortion.Top,SourcePortion.Width,SourcePortion.Height)
+		        Destination.DrawRetinaPicture(ArtisanKit.RetinaPicture(Source),X,Y,SourceWidth,SourceHeight,SourcePortion.Left,SourcePortion.Top,SourcePortion.Width,SourcePortion.Height)
 		      Else
-		        Destination.DrawPicture(Source,X,Y,SourcePortion.Width / Factor,SourcePortion.Height / Factor,SourcePortion.Left,SourcePortion.Top,SourcePortion.Width,SourcePortion.Height)
+		        Destination.DrawPicture(Source,X,Y,SourceWidth,SourceHeight / Factor,SourcePortion.Left,SourcePortion.Top,SourcePortion.Width,SourcePortion.Height)
 		      End If
 		    Next
 		  Next
