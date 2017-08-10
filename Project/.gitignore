@@ -1,6 +1,11 @@
-*.xojo_uistate
-Builds - *
-*.debug.app
+Builds*
 *.debug
-*.tar.gz
+*.debug.app
+Debug*.exe
+Debug*/Debug*.exe
+Debug*/Debug*\ Libs
+*.rbuistate
+*.xojo_uistate
+*.obsolete*
+Debug*.tar.gz
 TempSaveFile*
