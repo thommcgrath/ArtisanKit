@@ -73,7 +73,9 @@ Inherits Canvas
 		      End If
 		      G.ForeColor = BackgroundColor
 		      G.FillRect(0,0,G.Width,G.Height)
-		    End If
+		    End If  
+		  #else
+		    G.ClearRect(0,0,G.Width,G.Height)
 		  #endif
 		  
 		  Dim Highlighted As Boolean
