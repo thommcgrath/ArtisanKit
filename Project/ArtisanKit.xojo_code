@@ -2,6 +2,22 @@
 Protected Module ArtisanKit
 	#tag CompatibilityFlags = ( TargetHasGUI )
 	#tag Method, Flags = &h1
+		Protected Sub BeginFocusRing()
+		  #if TargetCocoa
+		    Const NSFocusRingAbove = 2
+		    
+		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
+		    Declare Sub SaveGraphicsState Lib "Cocoa.framework" Selector "saveGraphicsState" (Target As Ptr)
+		    Declare Sub NSSetFocusRingStyle Lib "Cocoa.framework" (Placement As Integer)
+		    
+		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
+		    SaveGraphicsState(GraphicsContextClass)
+		    NSSetFocusRingStyle(NSFocusRingAbove)
+		  #endif
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Function BlendColors(Color1 As Color, Color2 As Color, Color2Opacity As Double = 1) As Color
 		  if Color1.Alpha <> 0 Or Color2.Alpha <> 0 Then
 		    Dim Err As New UnsupportedOperationException
@@ -215,6 +231,18 @@ Protected Module ArtisanKit
 		      G.DrawPicture(Source,Dest.Left,Dest.Top,Dest.Width,Dest.Height,Src.Left,Src.Top,Src.Width,Src.Height)
 		    End If
 		  Next
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Sub EndFocusRing()
+		  #if TargetCocoa
+		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
+		    Declare Sub RestoreGraphicsState Lib "Cocoa.framework" Selector "restoreGraphicsState" (Target As Ptr)
+		    
+		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
+		    RestoreGraphicsState(GraphicsContextClass)
+		  #endif
 		End Sub
 	#tag EndMethod
 

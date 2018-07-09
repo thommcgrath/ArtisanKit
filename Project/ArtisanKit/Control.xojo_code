@@ -130,17 +130,8 @@ Inherits Canvas
 
 	#tag Method, Flags = &h1
 		Protected Sub BeginFocusRing(G As Graphics)
-		  #if TargetCocoa
-		    Const NSFocusRingAbove = 2
-		    
-		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
-		    Declare Sub SaveGraphicsState Lib "Cocoa.framework" Selector "saveGraphicsState" (Target As Ptr)
-		    Declare Sub NSSetFocusRingStyle Lib "Cocoa.framework" (Placement As Integer)
-		    
-		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
-		    SaveGraphicsState(GraphicsContextClass)
-		    NSSetFocusRingStyle(NSFocusRingAbove)
-		  #endif
+		  #Pragma Unused G
+		  ArtisanKit.BeginFocusRing()
 		End Sub
 	#tag EndMethod
 
@@ -161,13 +152,8 @@ Inherits Canvas
 
 	#tag Method, Flags = &h1
 		Protected Sub EndFocusRing(G As Graphics)
-		  #if TargetCocoa
-		    Declare Function NSClassFromString Lib "Cocoa.framework" (ClassName As CFStringRef) As Ptr
-		    Declare Sub RestoreGraphicsState Lib "Cocoa.framework" Selector "restoreGraphicsState" (Target As Ptr)
-		    
-		    Dim GraphicsContextClass As Ptr = NSClassFromString("NSGraphicsContext")
-		    RestoreGraphicsState(GraphicsContextClass)
-		  #endif
+		  #Pragma Unused G
+		  ArtisanKit.EndFocusRing()
 		End Sub
 	#tag EndMethod
 
