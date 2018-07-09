@@ -42,10 +42,14 @@ Inherits Canvas
 		Sub Open()
 		  Self.NeedsFullKeyboardAccessForFocus = True
 		  RaiseEvent Open
-		  Self.DoubleBuffer = TargetWin32
-		  Self.EraseBackground = Not Self.DoubleBuffer
-		  #if XojoVersion >= 2013.04
-		    Self.Transparent = Self.EraseBackground
+		  #if XojoVersion < 2018.01
+		    Self.DoubleBuffer = TargetWin32
+		    Self.EraseBackground = Not Self.DoubleBuffer
+		    #if XojoVersion >= 2013.04
+		      Self.Transparent = Self.EraseBackground
+		    #endif
+		  #else
+		    Self.DoubleBuffer = False
 		  #endif
 		  Self.TabStop = (Self.TabStop Or Self.AcceptFocus) And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
 		End Sub
@@ -59,16 +63,18 @@ Inherits Canvas
 		    Self.mLastPaintHeight = G.Height
 		  End If
 		  
-		  If Not Self.EraseBackground Then
-		    Dim BackgroundColor As Color
-		    If Self.Window <> Nil And Self.Window.HasBackColor Then
-		      BackgroundColor = Self.Window.BackColor
-		    Else
-		      BackgroundColor = FillColor
+		  #if XojoVersion < 2018.01
+		    If Not Self.EraseBackground Then
+		      Dim BackgroundColor As Color
+		      If Self.Window <> Nil And Self.Window.HasBackColor Then
+		        BackgroundColor = Self.Window.BackColor
+		      Else
+		        BackgroundColor = FillColor
+		      End If
+		      G.ForeColor = BackgroundColor
+		      G.FillRect(0,0,G.Width,G.Height)
 		    End If
-		    G.ForeColor = BackgroundColor
-		    G.FillRect(0,0,G.Width,G.Height)
-		  End If
+		  #endif
 		  
 		  Dim Highlighted As Boolean
 		  If Self.Enabled Then
@@ -164,32 +170,48 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Invalidate(eraseBackground As Boolean = True)
+		Sub Invalidate(EraseBackground As Boolean = True)
 		  If Not Self.mInvalidated Then
-		    Super.Invalidate(EraseBackground And Self.EraseBackground)
+		    #if XojoVersion >= 2018.01
+		      Super.Invalidate(EraseBackground)
+		    #else
+		      Super.Invalidate(EraseBackground And Self.EraseBackground)
+		    #endif
 		    Self.mInvalidated = True
 		  End If
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Invalidate(x As Integer, y As Integer, width As Integer, height As Integer, eraseBackground As Boolean = True)
+		Sub Invalidate(X As Integer, Y As Integer, Width As Integer, Height As Integer, EraseBackground As Boolean = True)
 		  If Not Self.mInvalidated Then
-		    Super.Invalidate(X,Y,Width,Height,EraseBackground And Self.EraseBackground)
+		    #if XojoVersion >= 2018.01
+		      Super.Invalidate(X, Y, Width, Height, EraseBackground)
+		    #else
+		      Super.Invalidate(X, Y, Width, Height, EraseBackground And Self.EraseBackground)
+		    #endif
 		    Self.mInvalidated = True
 		  End If
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Refresh(eraseBackground As Boolean = True)
-		  Super.Refresh(EraseBackground And Self.EraseBackground)
+		Sub Refresh(EraseBackground As Boolean = True)
+		  #if XojoVersion >= 2018.01
+		    Super.Refresh(EraseBackground)
+		  #else
+		    Super.Refresh(EraseBackground And Self.EraseBackground)
+		  #endif
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub RefreshRect(x As Integer, y As Integer, width As Integer, height As Integer, eraseBackground As Boolean = True)
-		  Super.RefreshRect(X,Y,Width,Height,EraseBackground And Self.EraseBackground)
+		Sub RefreshRect(X As Integer, Y As Integer, Width As Integer, Height As Integer, EraseBackground As Boolean = True)
+		  #if XojoVersion >= 2018.01
+		    Super.RefreshRect(X, Y, Width, Height, EraseBackground)
+		  #else
+		    Super.RefreshRect(X, Y, Width, Height, EraseBackground And Self.EraseBackground)
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -392,6 +414,7 @@ Inherits Canvas
 			Group="Behavior"
 			InitialValue="True"
 			Type="Boolean"
+			EditorType="Boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="HasFocus"
