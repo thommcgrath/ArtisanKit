@@ -135,7 +135,7 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Sub BeginFocusRing(G As Graphics)
+		Attributes( Deprecated ) Protected Sub BeginFocusRing(G As Graphics)
 		  #Pragma Unused G
 		  ArtisanKit.BeginFocusRing()
 		End Sub
@@ -157,7 +157,7 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Sub EndFocusRing(G As Graphics)
+		Attributes( Deprecated ) Protected Sub EndFocusRing(G As Graphics)
 		  #Pragma Unused G
 		  ArtisanKit.EndFocusRing()
 		End Sub
