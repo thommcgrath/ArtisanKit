@@ -116,6 +116,25 @@ Protected Module ArtisanKit
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1
+		Protected Function ColorIsBright(Source As Color) As Boolean
+		  Return ColorLuminance(Source) > 0.65 Or ColorBrightness(Source) >= 170
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function ColorLuminance(Source As Color) As Double
+		  If Source.Red = Source.Green And Source.Green = Source.Blue Then
+		    Return Source.Red / 255
+		  End If
+		  
+		  Dim Red As Double = (Source.Red / 255) ^ 2.2
+		  Dim Green As Double = (Source.Green / 255) ^ 2.2
+		  Dim Blue As Double = (Source.Blue / 255) ^ 2.2
+		  Return (0.2126 * Red) + (0.7151 * Green) + (0.0721 * Blue)
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Sub DrawRetinaPicture(Extends G As Graphics, Source As ArtisanKit.RetinaPicture, Left As Integer, Top As Integer)
 		  G.DrawRetinaPicture(Source,Left,Top,Source.Width,Source.Height,0,0,Source.Width,Source.Height)
@@ -294,6 +313,16 @@ Protected Module ArtisanKit
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1
+		Protected Function IsDarkMode() As Boolean
+		  #if XojoVersion >= 2018.03
+		    Return REALbasic.IsDarkMode
+		  #else
+		    Return False
+		  #endif
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Function ScalingFactor(Extends G As Graphics) As Single
 		  #if XojoVersion >= 2016.04
@@ -329,7 +358,7 @@ Protected Module ArtisanKit
 
 	#tag Note, Name = Version
 		
-		1.0.2
+		1.1.0
 	#tag EndNote
 
 
