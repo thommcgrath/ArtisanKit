@@ -45,25 +45,32 @@ Protected Module ArtisanKit
 		      Return G.FontAscent * 0.8
 		    End If
 		    
+		    #if Target64Bit
+		      Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		      Declare Function BoldSystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
+		      Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Double) As Ptr
+		      Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Double
+		    #else
+		      Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		      Declare Function BoldSystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Single) As Ptr
+		      Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Single) As Ptr
+		      Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Single
+		    #endif
+		    
 		    Var FontObject As Ptr
 		    If G.FontName = "SmallSystem" And G.FontSize = 0 Then
 		      If G.Bold Then
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
-		        FontObject = SystemFontOfSize(NSFont, 11)
+		        FontObject = BoldSystemFontOfSize(NSFont, 11)
 		      Else
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
 		        FontObject = SystemFontOfSize(NSFont, 11)
 		      End If
 		    ElseIf G.FontName = "System" Or G.FontName = "SmallSystem" Then
 		      If G.Bold Then
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "boldSystemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
-		        FontObject = SystemFontOfSize(NSFont, G.FontSize)
+		        FontObject = BoldSystemFontOfSize(NSFont, G.FontSize)
 		      Else
-		        Declare Function SystemFontOfSize Lib "Cocoa.framework" Selector "systemFontOfSize:" (Target As Ptr, Size As Double) As Ptr
 		        FontObject = SystemFontOfSize(NSFont, G.FontSize)
 		      End If
 		    Else
-		      Declare Function FontWithName Lib "Cocoa.framework" Selector "fontWithName:size:" (Target As Ptr, FontName As CFStringRef, Size As Double) As Ptr
 		      FontObject = FontWithName(NSFont, G.FontName, G.FontSize)
 		    End If
 		    
@@ -74,7 +81,6 @@ Protected Module ArtisanKit
 		      Return G.FontAscent * 0.8
 		    End If
 		    
-		    Declare Function GetCapHeight Lib "Cocoa.framework" Selector "capHeight" (Target As Ptr) As Double
 		    Return GetCapHeight(FontObject)
 		  #elseif TargetWin32
 		    Return G.FontAscent * 0.75
@@ -123,7 +129,7 @@ Protected Module ArtisanKit
 
 	#tag Method, Flags = &h0
 		Sub DrawRetinaPicture(Extends G As Graphics, Source As ArtisanKit.RetinaPicture, Left As Integer, Top As Integer, Width As Integer, Height As Integer, SourceLeft As Integer, SourceTop As Integer, SourceWidth As Integer, SourceHeight As Integer)
-		  Var Factor As Double = G.ScalingFactor
+		  Var Factor As Double = (G.ScaleX + G.ScaleY) / 2
 		  Var BestResolution As Picture = Source
 		  If Factor > 1 Then
 		    BestResolution = Source.HiRes
@@ -241,7 +247,7 @@ Protected Module ArtisanKit
 
 	#tag Method, Flags = &h0
 		Sub FillWithPattern(Extends G As Graphics, Source As Picture, Area As Xojo.Rect, SourcePortion As Xojo.Rect = Nil)
-		  Var Factor As Double = G.ScalingFactor
+		  Var Factor As Double = (G.ScaleX + G.ScaleY) / 2
 		  Var Destination As Graphics = G.Clip(Area.Left, Area.Top, Area.Width, Area.Height)
 		  If SourcePortion = Nil Then
 		    SourcePortion = New Xojo.Rect(0, 0, Source.Width, Source.Height)
@@ -288,14 +294,14 @@ Protected Module ArtisanKit
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function IsDarkMode() As Boolean
+		Attributes( Deprecated = "REALbasic.IsDarkMode" ) Protected Function IsDarkMode() As Boolean
 		  Return REALbasic.IsDarkMode
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ScalingFactor(Extends G As Graphics) As Single
-		  Return G.ScaleX
+		Attributes( Deprecated = "Graphics.ScaleX" )  Function ScalingFactor(Extends G As Graphics) As Single
+		  Return (G.ScaleX + G.ScaleY) / 2
 		End Function
 	#tag EndMethod
 
@@ -309,17 +315,6 @@ Protected Module ArtisanKit
 		
 		1.1.0
 	#tag EndNote
-
-
-	#tag Structure, Name = CGSize, Flags = &h21
-		Width As Single
-		Height As Single
-	#tag EndStructure
-
-	#tag Structure, Name = CGSize64, Flags = &h21
-		Width As Double
-		Height As Double
-	#tag EndStructure
 
 
 	#tag ViewBehavior

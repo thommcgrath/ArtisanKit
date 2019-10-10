@@ -5,7 +5,6 @@ Inherits Canvas
 		Sub Activated()
 		  RaiseEvent Activated
 		  Self.Invalidate
-		  
 		End Sub
 	#tag EndEvent
 
@@ -13,7 +12,6 @@ Inherits Canvas
 		Sub Deactivated()
 		  RaiseEvent Deactivated
 		  Self.Invalidate
-		  
 		End Sub
 	#tag EndEvent
 
@@ -45,7 +43,6 @@ Inherits Canvas
 		  Self.NeedsFullKeyboardAccessForFocus = True
 		  RaiseEvent Opening
 		  Self.AllowFocus = Self.AllowFocus And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
-		  
 		End Sub
 	#tag EndEvent
 
@@ -76,7 +73,7 @@ Inherits Canvas
 		    ConvertedAreas(I) = Areas(I)
 		  Next
 		  
-		  RaiseEvent Paint(G, ConvertedAreas, G.ScalingFactor, Highlighted)
+		  RaiseEvent Paint(G, ConvertedAreas, (G.ScaleX + G.ScaleY) / 2, Highlighted)
 		  Self.mInvalidated = False
 		End Sub
 	#tag EndEvent
