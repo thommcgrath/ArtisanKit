@@ -2,16 +2,18 @@
 Protected Class Control
 Inherits Canvas
 	#tag Event
-		Sub Activate()
-		  RaiseEvent Activate
+		Sub Activated()
+		  RaiseEvent Activated
 		  Self.Invalidate
+		  
 		End Sub
 	#tag EndEvent
 
 	#tag Event
-		Sub Deactivate()
-		  RaiseEvent Deactivate
+		Sub Deactivated()
+		  RaiseEvent Deactivated
 		  Self.Invalidate
+		  
 		End Sub
 	#tag EndEvent
 
@@ -33,25 +35,17 @@ Inherits Canvas
 
 	#tag Event
 		Function MouseWheel(X As Integer, Y As Integer, deltaX as Integer, deltaY as Integer) As Boolean
-		  Dim WheelData As New ArtisanKit.ScrollEvent(Self.ScrollSpeed, DeltaX, DeltaY)
+		  Var WheelData As New ArtisanKit.ScrollEvent(Self.ScrollSpeed, DeltaX, DeltaY)
 		  Return MouseWheel(X, Y, WheelData.ScrollX, WheelData.ScrollY, WheelData)
 		End Function
 	#tag EndEvent
 
 	#tag Event
-		Sub Open()
+		Sub Opening()
 		  Self.NeedsFullKeyboardAccessForFocus = True
-		  RaiseEvent Open
-		  #if XojoVersion < 2018.01
-		    Self.DoubleBuffer = TargetWin32
-		    Self.EraseBackground = Not Self.DoubleBuffer
-		    #if XojoVersion >= 2013.04
-		      Self.Transparent = Self.EraseBackground
-		    #endif
-		  #else
-		    Self.DoubleBuffer = False
-		  #endif
-		  Self.TabStop = (Self.TabStop Or Self.AcceptFocus) And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
+		  RaiseEvent Opening
+		  Self.AllowFocus = Self.AllowFocus And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
+		  
 		End Sub
 	#tag EndEvent
 
@@ -63,22 +57,9 @@ Inherits Canvas
 		    Self.mLastPaintHeight = G.Height
 		  End If
 		  
-		  #if XojoVersion < 2018.01
-		    If Not Self.EraseBackground Then
-		      Dim BackgroundColor As Color
-		      If Self.Window <> Nil And Self.Window.HasBackColor Then
-		        BackgroundColor = Self.Window.BackColor
-		      Else
-		        BackgroundColor = FillColor
-		      End If
-		      G.ForeColor = BackgroundColor
-		      G.FillRect(0,0,G.Width,G.Height)
-		    End If  
-		  #else
-		    G.ClearRect(0,0,G.Width,G.Height)
-		  #endif
+		  G.ClearRect(0, 0, G.Width, G.Height)
 		  
-		  Dim Highlighted As Boolean
+		  Var Highlighted As Boolean
 		  If Self.Enabled Then
 		    #if TargetCocoa
 		      Declare Function IsMainWindow Lib "Cocoa.framework" Selector "isMainWindow" (Target As Integer) As Boolean
@@ -89,7 +70,13 @@ Inherits Canvas
 		    #endif
 		  End If
 		  
-		  RaiseEvent Paint(G,Areas,G.ScalingFactor,Highlighted)
+		  Dim ConvertedAreas() As Xojo.Rect
+		  ConvertedAreas.ResizeTo(Areas.LastRowIndex)
+		  For I As Integer = 0 To Areas.LastRowIndex
+		    ConvertedAreas(I) = Areas(I)
+		  Next
+		  
+		  RaiseEvent Paint(G, ConvertedAreas, G.ScalingFactor, Highlighted)
 		  Self.mInvalidated = False
 		End Sub
 	#tag EndEvent
@@ -99,12 +86,12 @@ Inherits Canvas
 		Private Sub AnimationTimerAction(Sender As Timer)
 		  #pragma Unused Sender
 		  
-		  For I As Integer = Self.mAnimations.Count - 1 DownTo 0
-		    Dim Key As String = Self.mAnimations.Key(I)
-		    Dim Details As AnimationDetails = Self.mAnimations.Value(Key)
-		    Dim Elapsed As Double = (Microseconds - Details.StartTime) / 1000000
-		    Dim ChangeInValue As Double = Details.EndValue - Details.StartValue
-		    Dim Value As Double
+		  For I As Integer = Self.mAnimations.KeyCount - 1 DownTo 0
+		    Var Key As String = Self.mAnimations.Key(I)
+		    Var Details As AnimationDetails = Self.mAnimations.Value(Key)
+		    Var Elapsed As Double = (System.Microseconds - Details.StartTime) / 1000000
+		    Var ChangeInValue As Double = Details.EndValue - Details.StartValue
+		    Var Value As Double
 		    If Elapsed >= Details.Duration Then
 		      // Finished
 		      Value = Details.EndValue
@@ -115,9 +102,9 @@ Inherits Canvas
 		        Value = (ChangeInValue * (Elapsed / Details.Duration)) + Details.StartValue
 		      End If
 		      If Details.EndValue > Details.StartValue Then
-		        Value = Min(Value,Details.EndValue)
+		        Value = Min(Value, Details.EndValue)
 		      ElseIf Details.EndValue < Details.StartValue Then
-		        Value = Max(Value,Details.EndValue)
+		        Value = Max(Value, Details.EndValue)
 		      Else
 		        Value = Details.StartValue
 		      End If
@@ -125,12 +112,12 @@ Inherits Canvas
 		    If Value = Details.EndValue Then
 		      Self.mAnimations.Remove(Key)
 		    End If
-		    RaiseEvent AnimationStep(Key,Value,Value = Details.EndValue)
+		    RaiseEvent AnimationStep(Key, Value, Value = Details.EndValue)
 		    Self.Invalidate
 		  Next
-		  If Self.mAnimations.Count = 0 Then
-		    RemoveHandler mAnimationTimer.Action, WeakAddressOf AnimationTimerAction
-		    Self.mAnimationTimer.Mode = Timer.ModeOff
+		  If Self.mAnimations.KeyCount = 0 Then
+		    RemoveHandler mAnimationTimer.Run, WeakAddressOf AnimationTimerAction
+		    Self.mAnimationTimer.RunMode = Timer.RunModes.Off
 		    Self.mAnimationTimer = Nil
 		  End If
 		End Sub
@@ -149,10 +136,10 @@ Inherits Canvas
 		    Return
 		  End If
 		  
-		  Dim Details As AnimationDetails = Self.mAnimations.Value(Key)
+		  Var Details As AnimationDetails = Self.mAnimations.Value(Key)
 		  Self.mAnimations.Remove(Key)
 		  If Finish Then
-		    RaiseEvent AnimationStep(Key,Details.EndValue,True)
+		    RaiseEvent AnimationStep(Key, Details.EndValue, True)
 		    Self.Invalidate
 		  End If
 		End Sub
@@ -174,11 +161,7 @@ Inherits Canvas
 	#tag Method, Flags = &h0
 		Sub Invalidate(EraseBackground As Boolean = True)
 		  If Not Self.mInvalidated Then
-		    #if XojoVersion >= 2018.01
-		      Super.Invalidate(EraseBackground)
-		    #else
-		      Super.Invalidate(EraseBackground And Self.EraseBackground)
-		    #endif
+		    Super.Invalidate(EraseBackground)
 		    Self.mInvalidated = True
 		  End If
 		End Sub
@@ -187,48 +170,24 @@ Inherits Canvas
 	#tag Method, Flags = &h0
 		Sub Invalidate(X As Integer, Y As Integer, Width As Integer, Height As Integer, EraseBackground As Boolean = True)
 		  If Not Self.mInvalidated Then
-		    #if XojoVersion >= 2018.01
-		      Super.Invalidate(X, Y, Width, Height, EraseBackground)
-		    #else
-		      Super.Invalidate(X, Y, Width, Height, EraseBackground And Self.EraseBackground)
-		    #endif
+		    Super.Invalidate(X, Y, Width, Height, EraseBackground)
 		    Self.mInvalidated = True
 		  End If
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Refresh(EraseBackground As Boolean = True)
-		  #if XojoVersion >= 2018.01
-		    Super.Refresh(EraseBackground)
-		  #else
-		    Super.Refresh(EraseBackground And Self.EraseBackground)
-		  #endif
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub RefreshRect(X As Integer, Y As Integer, Width As Integer, Height As Integer, EraseBackground As Boolean = True)
-		  #if XojoVersion >= 2018.01
-		    Super.RefreshRect(X, Y, Width, Height, EraseBackground)
-		  #else
-		    Super.RefreshRect(X, Y, Width, Height, EraseBackground And Self.EraseBackground)
-		  #endif
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Function Render(Width As Integer, Height As Integer) As ArtisanKit.RetinaPicture
-		  Dim Areas(0) As REALbasic.Rect
-		  Areas(0) = New REALbasic.Rect(0,0,Width,Height)
-		  Dim LowRes As New Picture(Width,Height)
-		  RaiseEvent Paint(LowRes.Graphics,Areas,1,True)
-		  Dim HighRes As New Picture(Width * 2,Height * 2)
+		  Var Areas(0) As Xojo.Rect
+		  Areas(0) = New Xojo.Rect(0, 0, Width, Height)
+		  Var LowRes As New Picture(Width, Height)
+		  RaiseEvent Paint(LowRes.Graphics, Areas, 1, True)
+		  Var HighRes As New Picture(Width * 2, Height * 2)
 		  HighRes.VerticalResolution = LowRes.VerticalResolution * 2
 		  HighRes.HorizontalResolution = LowRes.HorizontalResolution * 2
-		  Areas(0) = New REALbasic.Rect(0,0,Width * 2,Height * 2)
-		  RaiseEvent Paint(HighRes.Graphics,Areas,2,True)
-		  Return ArtisanKit.RetinaPicture.CreateFrom(LowRes,HighRes)
+		  Areas(0) = New Xojo.Rect(0, 0, Width * 2, Height * 2)
+		  RaiseEvent Paint(HighRes.Graphics, Areas, 2, True)
+		  Return ArtisanKit.RetinaPicture.CreateFrom(LowRes, HighRes)
 		End Function
 	#tag EndMethod
 
@@ -238,20 +197,20 @@ Inherits Canvas
 		    Self.mAnimations = New Dictionary
 		  End If
 		  
-		  Dim Details As AnimationDetails
+		  Var Details As AnimationDetails
 		  Details.StartValue = StartValue
 		  Details.EndValue = EndValue
-		  Details.StartTime = Microseconds
+		  Details.StartTime = System.Microseconds
 		  Details.Duration = Duration
 		  Details.Ease = Ease
 		  
 		  Self.mAnimations.Value(Key) = Details
 		  
 		  If Self.mAnimationTimer = Nil Then
-		    Dim AnimTimer As New Timer
-		    AnimTimer.Mode = Timer.ModeMultiple
+		    Var AnimTimer As New Timer
+		    AnimTimer.RunMode = Timer.RunModes.Multiple
 		    AnimTimer.Period = 16
-		    AddHandler AnimTimer.Action, WeakAddressOf AnimationTimerAction
+		    AddHandler AnimTimer.Run, WeakAddressOf AnimationTimerAction
 		    Self.mAnimationTimer = AnimTimer
 		  End If
 		End Sub
@@ -259,7 +218,7 @@ Inherits Canvas
 
 
 	#tag Hook, Flags = &h0
-		Event Activate()
+		Event Activated()
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
@@ -267,7 +226,7 @@ Inherits Canvas
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event Deactivate()
+		Event Deactivated()
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
@@ -283,11 +242,11 @@ Inherits Canvas
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event Open()
+		Event Opening()
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event Paint(G As Graphics, Areas() As REALbasic.Rect, ScalingFactor As Double, Highlighted As Boolean)
+		Event Paint(G As Graphics, Areas() As Xojo.Rect, ScalingFactor As Double, Highlighted As Boolean)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
@@ -372,29 +331,52 @@ Inherits Canvas
 
 	#tag ViewBehavior
 		#tag ViewProperty
-			Name="AcceptFocus"
-			Visible=true
-			Group="Behavior"
-			Type="Boolean"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="AcceptTabs"
-			Visible=true
-			Group="Behavior"
-			Type="Boolean"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="AutoDeactivate"
+			Name="AllowAutoDeactivate"
 			Visible=true
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="Tooltip"
+			Visible=true
+			Group="Appearance"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AllowFocusRing"
+			Visible=true
+			Group="Appearance"
+			InitialValue="True"
+			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AllowFocus"
+			Visible=true
+			Group="Behavior"
+			InitialValue="False"
+			Type="Boolean"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AllowTabs"
+			Visible=true
+			Group="Behavior"
+			InitialValue="False"
+			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Backdrop"
+			Visible=false
 			Group="Appearance"
+			InitialValue=""
 			Type="Picture"
-			EditorType="Picture"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="DoubleBuffer"
@@ -402,6 +384,7 @@ Inherits Canvas
 			Group="Behavior"
 			InitialValue="False"
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Enabled"
@@ -409,19 +392,15 @@ Inherits Canvas
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="EraseBackground"
-			Visible=true
-			Group="Behavior"
-			InitialValue="True"
-			Type="Boolean"
-			EditorType="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="HasFocus"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Height"
@@ -429,79 +408,95 @@ Inherits Canvas
 			Group="Position"
 			InitialValue="100"
 			Type="Integer"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="HelpTag"
-			Visible=true
-			Group="Appearance"
-			Type="String"
-			EditorType="MultiLineEditor"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Index"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="Integer"
-			EditorType="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="InitialParent"
+			Visible=false
+			Group=""
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Left"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockBottom"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockLeft"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockRight"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockTop"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
-			EditorType="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="NeedsFullKeyboardAccessForFocus"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ScrollSpeed"
+			Visible=false
 			Group="Behavior"
 			InitialValue="20"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
-			EditorType="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabIndex"
@@ -509,12 +504,15 @@ Inherits Canvas
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabPanelIndex"
+			Visible=false
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabStop"
@@ -522,12 +520,15 @@ Inherits Canvas
 			Group="Position"
 			InitialValue="True"
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"
 			Visible=true
 			Group="Position"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Transparent"
@@ -535,14 +536,7 @@ Inherits Canvas
 			Group="Behavior"
 			InitialValue="True"
 			Type="Boolean"
-			EditorType="Boolean"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="UseFocusRing"
-			Visible=true
-			Group="Appearance"
-			InitialValue="True"
-			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Visible"
@@ -550,6 +544,7 @@ Inherits Canvas
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Width"
@@ -557,6 +552,7 @@ Inherits Canvas
 			Group="Position"
 			InitialValue="100"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

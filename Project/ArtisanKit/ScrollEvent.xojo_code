@@ -15,31 +15,26 @@ Protected Class ScrollEvent
 		      Declare Function GetCurrentEvent Lib "Cocoa.framework" Selector "currentEvent" (Target As Ptr) As Ptr
 		      Declare Function RespondsToSelector Lib "Cocoa.framework" Selector "respondsToSelector:" (Target As Ptr, Sel As Ptr) As Boolean
 		      Declare Function HasPreciseScrollingDeltas Lib "Cocoa.framework" Selector "hasPreciseScrollingDeltas" (Target As Ptr) As Boolean
-		      #if Target64Bit
-		        Declare Function ScrollingDeltaX Lib "Cocoa.framework" Selector "scrollingDeltaX" (Target As Ptr) As Double
-		        Declare Function ScrollingDeltaY Lib "Cocoa.framework" Selector "scrollingDeltaY" (Target As Ptr) As Double
-		      #else
-		        Declare Function ScrollingDeltaX Lib "Cocoa.framework" Selector "scrollingDeltaX" (Target As Ptr) As Single
-		        Declare Function ScrollingDeltaY Lib "Cocoa.framework" Selector "scrollingDeltaY" (Target As Ptr) As Single
-		      #endif
+		      Declare Function ScrollingDeltaX Lib "Cocoa.framework" Selector "scrollingDeltaX" (Target As Ptr) As Double
+		      Declare Function ScrollingDeltaY Lib "Cocoa.framework" Selector "scrollingDeltaY" (Target As Ptr) As Double
 		      Declare Function GetMomentumPhase Lib "Cocoa.framework" Selector "momentumPhase" (Target As Ptr) As Integer
 		      Declare Function GetPhase Lib "Cocoa.framework" Selector "phase" (Target As Ptr) As Integer
 		      
-		      Dim NSApplication As Ptr = objc_getClass("NSApplication")
+		      Var NSApplication As Ptr = objc_getClass("NSApplication")
 		      If NSApplication <> Nil Then
-		        Dim SharedApplication As Ptr = GetSharedApplication(NSApplication)
+		        Var SharedApplication As Ptr = GetSharedApplication(NSApplication)
 		        If SharedApplication <> Nil Then
-		          Dim EventObject As Ptr = GetCurrentEvent(SharedApplication)
+		          Var EventObject As Ptr = GetCurrentEvent(SharedApplication)
 		          If EventObject <> Nil Then
-		            If RespondsToSelector(EventObject,sel_registerName("momentumPhase")) Then
+		            If RespondsToSelector(EventObject, sel_registerName("momentumPhase")) Then
 		              Self.mMomentumPhase = GetMomentumPhase(EventObject)
 		            End If
-		            If RespondsToSelector(EventObject,sel_registerName("phase")) Then
+		            If RespondsToSelector(EventObject, sel_registerName("phase")) Then
 		              Self.mPhase = GetPhase(EventObject)
 		            End If
-		            If RespondsToSelector(EventObject,sel_registerName("scrollingDeltaY")) Then
-		              Dim Factor As Integer = LineHeight
-		              If RespondsToSelector(EventObject,sel_registerName("hasPreciseScrollingDeltas")) And HasPreciseScrollingDeltas(EventObject) Then
+		            If RespondsToSelector(EventObject, sel_registerName("scrollingDeltaY")) Then
+		              Var Factor As Integer = LineHeight
+		              If RespondsToSelector(EventObject, sel_registerName("hasPreciseScrollingDeltas")) And HasPreciseScrollingDeltas(EventObject) Then
 		                Factor = 1
 		              End If
 		              Self.mHorizontalAmount = Round(ScrollingDeltaX(EventObject) * Factor) * -1
@@ -155,6 +150,7 @@ Protected Class ScrollEvent
 			Group="ID"
 			InitialValue="-2147483648"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Left"
@@ -162,43 +158,63 @@ Protected Class ScrollEvent
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LineHeight"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="MomentumPhase"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Phase"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ScrollX"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ScrollY"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"
@@ -206,6 +222,7 @@ Protected Class ScrollEvent
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
