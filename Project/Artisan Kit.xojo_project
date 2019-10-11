@@ -6,7 +6,6 @@ Class=App;App.xojo_code;&h000000006D057BDC;&h0000000000000000;false
 BuildSteps=Build Automation;Build Automation.xojo_code;&h0000000003072215;&h0000000000000000;false
 Module=ArtisanKit;ArtisanKit.xojo_code;&h000000001AB510A5;&h0000000000000000;false
 Class=Control;ArtisanKit/Control.xojo_code;&h000000003C9F42BA;&h000000001AB510A5;false
-Class=RetinaPicture;ArtisanKit/RetinaPicture.xojo_code;&h000000007F3BA15B;&h000000001AB510A5;false
 Class=ScrollEvent;ArtisanKit/ScrollEvent.xojo_code;&h000000003E3DAA92;&h000000001AB510A5;false
 MajorVersion=1
 MinorVersion=0

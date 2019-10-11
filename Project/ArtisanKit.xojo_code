@@ -115,28 +115,14 @@ Protected Module ArtisanKit
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Sub DrawRetinaPicture(Extends G As Graphics, Source As ArtisanKit.RetinaPicture, Left As Integer, Top As Integer)
-		  G.DrawRetinaPicture(Source, Left, Top, Source.Width, Source.Height, 0, 0, Source.Width, Source.Height)
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub DrawRetinaPicture(Extends G As Graphics, Source As ArtisanKit.RetinaPicture, Left As Integer, Top As Integer, Width As Integer, Height As Integer)
-		  G.DrawRetinaPicture(Source, Left, Top, Width, Height, 0, 0, Source.Width, Source.Height)
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub DrawRetinaPicture(Extends G As Graphics, Source As ArtisanKit.RetinaPicture, Left As Integer, Top As Integer, Width As Integer, Height As Integer, SourceLeft As Integer, SourceTop As Integer, SourceWidth As Integer, SourceHeight As Integer)
-		  Var Factor As Double = (G.ScaleX + G.ScaleY) / 2
-		  Var BestResolution As Picture = Source
-		  If Factor > 1 Then
-		    BestResolution = Source.HiRes
+	#tag Method, Flags = &h1
+		Protected Function CreateMultiResPicture(ParamArray Pictures() As Picture) As Picture
+		  If Pictures = Nil Or Pictures.LastRowIndex = -1 Then
+		    Return Nil
 		  End If
 		  
-		  G.DrawPicture(BestResolution, Left, Top, Width, Height, SourceLeft * Factor, SourceTop * Factor, SourceWidth * Factor, SourceHeight * Factor)
-		End Sub
+		  Return New Picture(Pictures(0).Width, Pictures(0).Height, Pictures)
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -224,11 +210,7 @@ Protected Module ArtisanKit
 		  For I As Integer = 0 To CellCount - 1
 		    Var Dest As Xojo.Rect = DestinationCells(I)
 		    Var Src As Xojo.Rect = SourceCells(I)
-		    If Source IsA ArtisanKit.RetinaPicture Then
-		      G.DrawRetinaPicture(ArtisanKit.RetinaPicture(Source), Dest.Left, Dest.Top, Dest.Width, Dest.Height, Src.Left, Src.Top, Src.Width, Src.Height)
-		    Else
-		      G.DrawPicture(Source, Dest.Left, Dest.Top, Dest.Width, Dest.Height, Src.Left, Src.Top, Src.Width, Src.Height)
-		    End If
+		    G.DrawPicture(Source, Dest.Left, Dest.Top, Dest.Width, Dest.Height, Src.Left, Src.Top, Src.Width, Src.Height)
 		  Next
 		End Sub
 	#tag EndMethod
@@ -247,7 +229,6 @@ Protected Module ArtisanKit
 
 	#tag Method, Flags = &h0
 		Sub FillWithPattern(Extends G As Graphics, Source As Picture, Area As Xojo.Rect, SourcePortion As Xojo.Rect = Nil)
-		  Var Factor As Double = (G.ScaleX + G.ScaleY) / 2
 		  Var Destination As Graphics = G.Clip(Area.Left, Area.Top, Area.Width, Area.Height)
 		  If SourcePortion = Nil Then
 		    SourcePortion = New Xojo.Rect(0, 0, Source.Width, Source.Height)
@@ -256,19 +237,11 @@ Protected Module ArtisanKit
 		  Var SourceWidth, SourceHeight As Integer
 		  SourceWidth = SourcePortion.Width
 		  SourceHeight = SourcePortion.Height
-		  If Not (Source IsA ArtisanKit.RetinaPicture) Then
-		    SourceWidth = SourceWidth / Factor
-		    SourceHeight = SourceHeight / Factor
-		  End If
 		  
 		  Var X, Y As Integer
 		  For X = 0 To Area.Width Step SourceWidth
 		    For Y = 0 To Area.Height Step SourceHeight
-		      If Source IsA ArtisanKit.RetinaPicture Then
-		        Destination.DrawRetinaPicture(ArtisanKit.RetinaPicture(Source), X, Y, SourceWidth, SourceHeight, SourcePortion.Left, SourcePortion.Top, SourcePortion.Width, SourcePortion.Height)
-		      Else
-		        Destination.DrawPicture(Source, X, Y, SourceWidth, SourceHeight / Factor, SourcePortion.Left, SourcePortion.Top, SourcePortion.Width, SourcePortion.Height)
-		      End If
+		      Destination.DrawPicture(Source, X, Y, SourceWidth, SourceHeight, SourcePortion.Left, SourcePortion.Top, SourcePortion.Width, SourcePortion.Height)
 		    Next
 		  Next
 		End Sub
@@ -294,26 +267,60 @@ Protected Module ArtisanKit
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Attributes( Deprecated = "REALbasic.IsDarkMode" ) Protected Function IsDarkMode() As Boolean
-		  Return REALbasic.IsDarkMode
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Attributes( Deprecated = "Graphics.ScaleX" )  Function ScalingFactor(Extends G As Graphics) As Single
-		  Return (G.ScaleX + G.ScaleY) / 2
+		Protected Function OpenMultiResPicture(File As FolderItem) As Picture
+		  Var Basename As String = File.Name
+		  Var Extension As String
+		  Var Parts() As String = Basename.Split(".")
+		  If Parts.LastRowIndex > 0 Then
+		    Extension = Parts(Parts.LastRowIndex)
+		    Parts.RemoveRowAt(Parts.LastRowIndex)
+		    Basename = String.FromArray(Parts, ".")
+		  End If
+		  
+		  Var Pos As Integer = Basename.IndexOf("@")
+		  If Pos > -1 Then
+		    Basename = Basename.Left(Pos)
+		  End If
+		  
+		  Dim Parent As FolderItem = File.Parent
+		  Dim Bitmaps() As Picture
+		  Dim BaseWidth, BaseHeight As Integer
+		  For Factor As Integer = 1 To 3
+		    Var Filename As String = Basename
+		    If Factor > 1 Then
+		      Filename = Filename + "@" + Factor.ToString + "x"
+		    End If
+		    
+		    Var Child As FolderItem = Parent.Child(Filename)
+		    If Child <> Nil And Child.Exists Then
+		      Var Pic As Picture = Picture.Open(Child)
+		      If Pic <> Nil Then
+		        If BaseWidth = 0 Or BaseHeight = 0 Then
+		          BaseWidth = Pic.Width / Factor
+		          BaseHeight = Pic.Height / Factor
+		        End If
+		        Bitmaps.AddRow(Pic)
+		      End If
+		    End If
+		  Next
+		  
+		  If Bitmaps.LastRowIndex = -1 Then
+		    Return Nil
+		  End If
+		  
+		  Return New Picture(BaseWidth, BaseHeight, Bitmaps)
 		End Function
 	#tag EndMethod
 
 
 	#tag Note, Name = Documentation
 		
-		Documentation can be found at http://docs.thezaz.com/artisankit/1.0.2
+		Documentation can be found at http://docs.thezaz.com/artisankit/1.2.0
 	#tag EndNote
 
 	#tag Note, Name = Version
 		
-		1.1.0
+		1.2.0
 	#tag EndNote
 
 

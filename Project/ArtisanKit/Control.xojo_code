@@ -73,7 +73,7 @@ Inherits Canvas
 		    ConvertedAreas(I) = Areas(I)
 		  Next
 		  
-		  RaiseEvent Paint(G, ConvertedAreas, (G.ScaleX + G.ScaleY) / 2, Highlighted)
+		  RaiseEvent Paint(G, ConvertedAreas, Highlighted)
 		  Self.mInvalidated = False
 		End Sub
 	#tag EndEvent
@@ -150,12 +150,6 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function Graphics() As Graphics
-		  Return Nil
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub Invalidate(EraseBackground As Boolean = True)
 		  If Not Self.mInvalidated Then
 		    Super.Invalidate(EraseBackground)
@@ -174,17 +168,22 @@ Inherits Canvas
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function Render(Width As Integer, Height As Integer) As ArtisanKit.RetinaPicture
+		Function Render(Width As Integer, Height As Integer, Highlighted As Boolean = True, MinScale As Double = 1.0, MaxScale As Double = 3.0) As Picture
 		  Var Areas(0) As Xojo.Rect
 		  Areas(0) = New Xojo.Rect(0, 0, Width, Height)
-		  Var LowRes As New Picture(Width, Height)
-		  RaiseEvent Paint(LowRes.Graphics, Areas, 1, True)
-		  Var HighRes As New Picture(Width * 2, Height * 2)
-		  HighRes.VerticalResolution = LowRes.VerticalResolution * 2
-		  HighRes.HorizontalResolution = LowRes.HorizontalResolution * 2
-		  Areas(0) = New Xojo.Rect(0, 0, Width * 2, Height * 2)
-		  RaiseEvent Paint(HighRes.Graphics, Areas, 2, True)
-		  Return ArtisanKit.RetinaPicture.CreateFrom(LowRes, HighRes)
+		  
+		  Var Bitmaps() As Picture
+		  For Factor As Double = MinScale To MaxScale
+		    Dim Pic As New Picture(Width, Height)
+		    Pic.HorizontalResolution = 72 * Factor
+		    Pic.VerticalResolution = 72 * Factor
+		    Pic.Graphics.ScaleX = Factor
+		    Pic.Graphics.ScaleY = Factor
+		    RaiseEvent Paint(Pic.Graphics, Areas, Highlighted)
+		    Bitmaps.AddRow(Pic)
+		  Next
+		  
+		  Return New Picture(Width, Height, Bitmaps)
 		End Function
 	#tag EndMethod
 
@@ -243,22 +242,13 @@ Inherits Canvas
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event Paint(G As Graphics, Areas() As Xojo.Rect, ScalingFactor As Double, Highlighted As Boolean)
+		Event Paint(G As Graphics, Areas() As Xojo.Rect, Highlighted As Boolean)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
 		Event Resized()
 	#tag EndHook
 
-
-	#tag ComputedProperty, Flags = &h0
-		#tag Getter
-			Get
-			  Return Nil
-			End Get
-		#tag EndGetter
-		Backdrop As Picture
-	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
