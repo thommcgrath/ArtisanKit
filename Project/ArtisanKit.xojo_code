@@ -282,9 +282,9 @@ Protected Module ArtisanKit
 		    Basename = Basename.Left(Pos)
 		  End If
 		  
-		  Dim Parent As FolderItem = File.Parent
-		  Dim Bitmaps() As Picture
-		  Dim BaseWidth, BaseHeight As Integer
+		  Var Parent As FolderItem = File.Parent
+		  Var Bitmaps() As Picture
+		  Var BaseWidth, BaseHeight As Integer
 		  For Factor As Integer = 1 To 3
 		    Var Filename As String = Basename
 		    If Factor > 1 Then

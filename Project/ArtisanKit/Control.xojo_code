@@ -67,7 +67,7 @@ Inherits Canvas
 		    #endif
 		  End If
 		  
-		  Dim ConvertedAreas() As Xojo.Rect
+		  Var ConvertedAreas() As Xojo.Rect
 		  ConvertedAreas.ResizeTo(Areas.LastRowIndex)
 		  For I As Integer = 0 To Areas.LastRowIndex
 		    ConvertedAreas(I) = Areas(I)
@@ -174,7 +174,7 @@ Inherits Canvas
 		  
 		  Var Bitmaps() As Picture
 		  For Factor As Double = MinScale To MaxScale
-		    Dim Pic As New Picture(Width, Height)
+		    Var Pic As New Picture(Width, Height)
 		    Pic.HorizontalResolution = 72 * Factor
 		    Pic.VerticalResolution = 72 * Factor
 		    Pic.Graphics.ScaleX = Factor
