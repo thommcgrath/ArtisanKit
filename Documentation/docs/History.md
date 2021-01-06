@@ -1,6 +1,6 @@
 # Version History
 
-## Version 1.2.1 - January 6th, 2020
+## Version 1.2.1 - January 6th, 2021
 
 - Fixed some event names that Xojo decided not to rename.
 - Cleaned up more API 2 deprecation warnings introduced in Xojo 2020r2.
