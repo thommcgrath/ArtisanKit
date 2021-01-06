@@ -3,27 +3,19 @@ Protected Class Control
 Inherits Canvas
 	#tag Event
 		Sub Activate()
-		  Self.Activated()
+		  RaiseEvent Activate
+		  Self.Invalidate
+		  
 		End Sub
 	#tag EndEvent
-
-	#tag EventAPI2
-		Sub Activated()
-		  Self.Activated()
-		End Sub
-	#tag EndEventAPI2
 
 	#tag Event
 		Sub Deactivate()
-		  Self.Deactivated()
+		  RaiseEvent Deactivate
+		  Self.Invalidate
+		  
 		End Sub
 	#tag EndEvent
-
-	#tag EventAPI2
-		Sub Deactivated()
-		  Self.Deactivated()
-		End Sub
-	#tag EndEventAPI2
 
 	#tag Event
 		Sub GotFocus()
@@ -43,22 +35,19 @@ Inherits Canvas
 
 	#tag Event
 		Function MouseWheel(X As Integer, Y As Integer, deltaX as Integer, deltaY as Integer) As Boolean
-		  Dim WheelData As New ArtisanKit.ScrollEvent(Self.ScrollSpeed, DeltaX, DeltaY)
+		  Var WheelData As New ArtisanKit.ScrollEvent(Self.ScrollSpeed, DeltaX, DeltaY)
 		  Return MouseWheel(X, Y, WheelData.ScrollX, WheelData.ScrollY, WheelData)
 		End Function
 	#tag EndEvent
 
 	#tag Event
 		Sub Open()
-		  Self.Opening()
+		  Self.NeedsFullKeyboardAccessForFocus = True
+		  RaiseEvent Open
+		  Self.AllowFocus = Self.AllowFocus And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
+		  
 		End Sub
 	#tag EndEvent
-
-	#tag EventAPI2
-		Sub Opening()
-		  Self.Opening()
-		End Sub
-	#tag EndEventAPI2
 
 	#tag Event
 		Sub Paint(g As Graphics, areas() As REALbasic.Rect)
@@ -68,9 +57,9 @@ Inherits Canvas
 		    Self.mLastPaintHeight = G.Height
 		  End If
 		  
-		  G.ClearRect(0, 0, G.Width, G.Height)
+		  G.ClearRectangle(0, 0, G.Width, G.Height)
 		  
-		  Dim Highlighted As Boolean
+		  Var Highlighted As Boolean
 		  If Self.Enabled Then
 		    #if TargetCocoa
 		      Declare Function IsMainWindow Lib "Cocoa.framework" Selector "isMainWindow" (Target As Integer) As Boolean
@@ -81,63 +70,35 @@ Inherits Canvas
 		    #endif
 		  End If
 		  
-		  #if XojoVersion >= 2019.02
-		    If IsEventImplemented("Painting") Then
-		      Dim ConvertedAreas() As Xojo.Rect
-		      ConvertedAreas.ResizeTo(Areas.LastRowIndex)
-		      For I As Integer = 0 To Areas.LastRowIndex
-		        ConvertedAreas(I) = Areas(I)
-		      Next
-		      RaiseEvent Painting(G, ConvertedAreas, Highlighted)
-		    Else
-		      RaiseEvent Paint(G, Areas, Highlighted)
-		    End If
+		  Var ConvertedAreas() As Xojo.Rect
+		  #if XojoVersion >= 2020.02
+		    ConvertedAreas.ResizeTo(Areas.LastIndex)
+		    For I As Integer = 0 To Areas.LastIndex
+		      ConvertedAreas(I) = Areas(I)
+		    Next
 		  #else
-		    RaiseEvent Paint(G, Areas, Highlighted)
+		    ConvertedAreas.ResizeTo(Areas.LastRowIndex)
+		    For I As Integer = 0 To Areas.LastRowIndex
+		      ConvertedAreas(I) = Areas(I)
+		    Next
 		  #endif
 		  
+		  RaiseEvent Paint(G, ConvertedAreas, Highlighted)
 		  Self.mInvalidated = False
 		End Sub
 	#tag EndEvent
 
 
 	#tag Method, Flags = &h21
-		Private Sub Activated()
-		  #if XojoVersion >= 2019.021
-		    If IsEventImplemented("Activated") Then
-		      RaiseEvent Activated
-		    Else
-		      RaiseEvent Activate
-		    End If
-		  #else
-		    RaiseEvent Activate
-		  #endif
-		  
-		  Self.Invalidate
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
 		Private Sub AnimationTimerAction(Sender As Timer)
 		  #pragma Unused Sender
 		  
-		  Dim KeyCount As Integer
-		  #if XojoVersion >= 2019.02
-		    KeyCount = Self.mAnimations.KeyCount
-		  #else
-		    KeyCount = Self.mAnimations.Count
-		  #endif
-		  For I As Integer = KeyCount - 1 DownTo 0
-		    Dim Key As String = Self.mAnimations.Key(I)
-		    Dim Details As AnimationDetails = Self.mAnimations.Value(Key)
-		    #if XojoVersion >= 2019.02
-		      Dim Now As Double = System.Microseconds
-		    #else
-		      Dim Now As Double = Microseconds
-		    #endif
-		    Dim Elapsed As Double = (Now - Details.StartTime) / 1000000
-		    Dim ChangeInValue As Double = Details.EndValue - Details.StartValue
-		    Dim Value As Double
+		  For I As Integer = Self.mAnimations.KeyCount - 1 DownTo 0
+		    Var Key As String = Self.mAnimations.Key(I)
+		    Var Details As AnimationDetails = Self.mAnimations.Value(Key)
+		    Var Elapsed As Double = (System.Microseconds - Details.StartTime) / 1000000
+		    Var ChangeInValue As Double = Details.EndValue - Details.StartValue
+		    Var Value As Double
 		    If Elapsed >= Details.Duration Then
 		      // Finished
 		      Value = Details.EndValue
@@ -161,19 +122,11 @@ Inherits Canvas
 		    RaiseEvent AnimationStep(Key, Value, Value = Details.EndValue)
 		    Self.Invalidate
 		  Next
-		  #if XojoVersion >= 2019.02
-		    If Self.mAnimations.KeyCount = 0 Then
-		      RemoveHandler mAnimationTimer.Run, WeakAddressOf AnimationTimerAction
-		      Self.mAnimationTimer.RunMode = Timer.RunModes.Off
-		      Self.mAnimationTimer = Nil
-		    End If
-		  #else
-		    If Self.mAnimations.Count = 0 Then
-		      RemoveHandler mAnimationTimer.Action, WeakAddressOf AnimationTimerAction
-		      Self.mAnimationTimer.Mode = Timer.ModeOff
-		      Self.mAnimationTimer = Nil
-		    End If
-		  #endif
+		  If Self.mAnimations.KeyCount = 0 Then
+		    RemoveHandler mAnimationTimer.Action, WeakAddressOf AnimationTimerAction
+		    Self.mAnimationTimer.RunMode = Timer.RunModes.Off
+		    Self.mAnimationTimer = Nil
+		  End If
 		End Sub
 	#tag EndMethod
 
@@ -190,28 +143,12 @@ Inherits Canvas
 		    Return
 		  End If
 		  
-		  Dim Details As AnimationDetails = Self.mAnimations.Value(Key)
+		  Var Details As AnimationDetails = Self.mAnimations.Value(Key)
 		  Self.mAnimations.Remove(Key)
 		  If Finish Then
 		    RaiseEvent AnimationStep(Key, Details.EndValue, True)
 		    Self.Invalidate
 		  End If
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h21
-		Private Sub Deactivated()
-		  #if XojoVersion >= 2019.021
-		    If IsEventImplemented("Deactivated") Then
-		      RaiseEvent Deactivated
-		    Else
-		      RaiseEvent Deactivate
-		    End If
-		  #else
-		    RaiseEvent Deactivate
-		  #endif
-		  
-		  Self.Invalidate
 		End Sub
 	#tag EndMethod
 
@@ -240,109 +177,55 @@ Inherits Canvas
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h21
-		Private Sub Opening()
-		  Self.NeedsFullKeyboardAccessForFocus = True
-		  
-		  #if XojoVersion >= 2019.021
-		    If IsEventImplemented("Opening") Then
-		      RaiseEvent Opening
-		    Else
-		      RaiseEvent Open
-		    End If
-		    Self.AllowFocus = Self.AllowFocus And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
-		  #else
-		    RaiseEvent Open
-		    Self.TabStop = Self.TabStop And (ArtisanKit.FullKeyboardAccessEnabled Or Self.NeedsFullKeyboardAccessForFocus = False)
-		  #endif
-		End Sub
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Function Render(Width As Integer, Height As Integer, Highlighted As Boolean = True, MinScale As Double = 1.0, MaxScale As Double = 3.0) As Picture
-		  #if XojoVersion >= 2019.021
-		    If IsEventImplemented("Painting") Then
-		      Dim Areas(0) As Xojo.Rect
-		      Areas(0) = New Xojo.Rect(0, 0, Width, Height)
-		      
-		      Dim Bitmaps() As Picture
-		      For Factor As Double = MinScale To MaxScale
-		        Dim Pic As New Picture(Width, Height)
-		        Pic.HorizontalResolution = 72 * Factor
-		        Pic.VerticalResolution = 72 * Factor
-		        Pic.Graphics.ScaleX = Factor
-		        Pic.Graphics.ScaleY = Factor
-		        RaiseEvent Painting(Pic.Graphics, Areas, Highlighted)
-		        Bitmaps.AddRow(Pic)
-		      Next
-		      
-		      Return New Picture(Width, Height, Bitmaps)
-		    Else
-		      Dim Areas(0) As REALbasic.Rect
-		      Areas(0) = New REALbasic.Rect(0, 0, Width, Height)
-		      
-		      Dim Bitmaps() As Picture
-		      For Factor As Double = MinScale To MaxScale
-		        Dim Pic As New Picture(Width, Height)
-		        Pic.HorizontalResolution = 72 * Factor
-		        Pic.VerticalResolution = 72 * Factor
-		        Pic.Graphics.ScaleX = Factor
-		        Pic.Graphics.ScaleY = Factor
-		        RaiseEvent Paint(Pic.Graphics, Areas, Highlighted)
-		        Bitmaps.AddRow(Pic)
-		      Next
-		      
-		      Return New Picture(Width, Height, Bitmaps)
-		    End If
-		  #else
-		    Dim Areas(0) As REALbasic.Rect
-		    Areas(0) = New REALbasic.Rect(0, 0, Width, Height)
-		    
-		    Dim Bitmaps() As Picture
-		    For Factor As Double = MinScale To MaxScale
-		      Dim Pic As New Picture(Width, Height)
-		      Pic.HorizontalResolution = 72 * Factor
-		      Pic.VerticalResolution = 72 * Factor
-		      Pic.Graphics.ScaleX = Factor
-		      Pic.Graphics.ScaleY = Factor
-		      RaiseEvent Paint(Pic.Graphics, Areas, Highlighted)
-		      Bitmaps.Append(Pic)
-		    Next
-		    
-		    Return New Picture(Width, Height, Bitmaps)
-		  #endif
+		  Var Areas(0) As Xojo.Rect
+		  Areas(0) = New Xojo.Rect(0, 0, Width, Height)
+		  
+		  Var Bitmaps() As Picture
+		  For Factor As Double = MinScale To MaxScale
+		    Var Pic As New Picture(Width, Height)
+		    Pic.HorizontalResolution = 72 * Factor
+		    Pic.VerticalResolution = 72 * Factor
+		    Pic.Graphics.ScaleX = Factor
+		    Pic.Graphics.ScaleY = Factor
+		    RaiseEvent Paint(Pic.Graphics, Areas, Highlighted)
+		    #if XojoVersion >= 2020.02
+		      Bitmaps.Add(Pic)
+		    #else
+		      Bitmaps.AddRow(Pic)
+		    #endif
+		  Next
+		  
+		  Return New Picture(Width, Height, Bitmaps)
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
 		Protected Sub StartAnimation(Key As String, StartValue As Double, EndValue As Double, Duration As Double, Ease As Boolean = True)
+		  If Not Animated Then
+		    RaiseEvent AnimationStep(Key, EndValue, True)
+		    Return
+		  End If
+		  
 		  If Self.mAnimations = Nil Then
 		    Self.mAnimations = New Dictionary
 		  End If
 		  
-		  Dim Details As AnimationDetails
+		  Var Details As AnimationDetails
 		  Details.StartValue = StartValue
 		  Details.EndValue = EndValue
-		  #if XojoVersion >= 2019.02
-		    Details.StartTime = System.Microseconds
-		  #else
-		    Details.StartTime = Microseconds
-		  #endif
+		  Details.StartTime = System.Microseconds
 		  Details.Duration = Duration
 		  Details.Ease = Ease
 		  
 		  Self.mAnimations.Value(Key) = Details
 		  
 		  If Self.mAnimationTimer = Nil Then
-		    Dim AnimTimer As New Timer
+		    Var AnimTimer As New Timer
+		    AnimTimer.RunMode = Timer.RunModes.Multiple
 		    AnimTimer.Period = 16
-		    #if XojoVersion >= 2019.02
-		      AddHandler AnimTimer.Run, WeakAddressOf AnimationTimerAction
-		      AnimTimer.RunMode = Timer.RunModes.Multiple
-		    #else
-		      AddHandler AnimTimer.Action, WeakAddressOf AnimationTimerAction
-		      AnimTimer.Mode = Timer.ModeMultiple
-		    #endif
+		    AddHandler AnimTimer.Action, WeakAddressOf AnimationTimerAction
 		    Self.mAnimationTimer = AnimTimer
 		  End If
 		End Sub
@@ -353,10 +236,6 @@ Inherits Canvas
 		Event Activate()
 	#tag EndHook
 
-	#tag HookAPI2, Flags = &h0
-		Attributes( API2Only ) Event Activated()
-	#tag EndHookAPI2
-
 	#tag Hook, Flags = &h0
 		Event AnimationStep(Key As String, Value As Double, Finished As Boolean)
 	#tag EndHook
@@ -364,10 +243,6 @@ Inherits Canvas
 	#tag Hook, Flags = &h0
 		Event Deactivate()
 	#tag EndHook
-
-	#tag HookAPI2, Flags = &h0
-		Attributes( API2Only ) Event Deactivated()
-	#tag EndHookAPI2
 
 	#tag Hook, Flags = &h0
 		Event GotFocus()
@@ -385,22 +260,18 @@ Inherits Canvas
 		Event Open()
 	#tag EndHook
 
-	#tag HookAPI2, Flags = &h0
-		Attributes( API2Only ) Event Opening()
-	#tag EndHookAPI2
-
 	#tag Hook, Flags = &h0
-		Event Paint(G As Graphics, Areas() As REALbasic.Rect, Highlighted As Boolean)
+		Event Paint(G As Graphics, Areas() As Xojo.Rect, Highlighted As Boolean)
 	#tag EndHook
-
-	#tag HookAPI2, Flags = &h0
-		Attributes( API2Only ) Event Painting(G As Graphics, Areas() As Xojo.Rect, Highlighted As Boolean)
-	#tag EndHookAPI2
 
 	#tag Hook, Flags = &h0
 		Event Resized()
 	#tag EndHook
 
+
+	#tag Property, Flags = &h0
+		Animated As Boolean = True
+	#tag EndProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
@@ -691,6 +562,14 @@ Inherits Canvas
 			Group="Position"
 			InitialValue="100"
 			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="Animated"
+			Visible=false
+			Group="Behavior"
+			InitialValue="True"
+			Type="Boolean"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior

@@ -4,7 +4,6 @@ pages:
 - ArtisanKit Module: 'ArtisanKit.md'
 - Classes: [
 {ArtisanKit.Control: 'ArtisanKit.Control.md'},
-{ArtisanKit.RetinaPicture: 'ArtisanKit.RetinaPicture.md'},
 {ArtisanKit.ScrollEvent: 'ArtisanKit.ScrollEvent.md'}
 ]
 - Version History: 'History.md'
