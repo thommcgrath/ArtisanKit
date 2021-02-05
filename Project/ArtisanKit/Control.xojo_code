@@ -57,7 +57,11 @@ Inherits Canvas
 		    Self.mLastPaintHeight = G.Height
 		  End If
 		  
-		  G.ClearRectangle(0, 0, G.Width, G.Height)
+		  #if XojoVersion >= 2019.03
+		    G.ClearRectangle(0, 0, G.Width, G.Height)
+		  #else
+		    G.ClearRect(0, 0, G.Width, G.Height)
+		  #endif
 		  
 		  Var Highlighted As Boolean
 		  If Self.Enabled Then
