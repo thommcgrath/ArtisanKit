@@ -28,17 +28,20 @@ Protected Module ArtisanKit
 
 	#tag Method, Flags = &h1
 		Protected Function BlendColors(Color1 As Color, Color2 As Color, Color2Opacity As Double = 1) As Color
-		  if Color1.Alpha <> 0 Or Color2.Alpha <> 0 Then
-		    Var Err As New UnsupportedOperationException
-		    Err.Message = "Cannot blend colors which have alpha channels."
-		    Raise Err
-		  end if
+		  If Color2Opacity >= 1 Then
+		    Return Color2
+		  ElseIf Color2Opacity <= 0 Then
+		    Return Color1
+		  End If
 		  
-		  Var RedAmt As Integer = (Color2Opacity * Color2.Red) + ((1 - Color2Opacity) * Color1.Red)
-		  Var GreenAmt As Integer = (Color2Opacity * Color2.Green) + ((1 - Color2Opacity) * Color1.Red)
-		  Var BlueAmt As Integer = (Color2Opacity * Color2.Blue) + ((1 - Color2Opacity) * Color1.Blue)
+		  Var Pic As New Picture(1, 1)
+		  Pic.Graphics.DrawingColor = Color1
+		  Pic.Graphics.Transparency = 100 * Color2Opacity
+		  Pic.Graphics.FillRectangle(0, 0, 1, 1)
+		  Pic.Graphics.DrawingColor = Color2
+		  Pic.Graphics.Transparency = 100 - (100 * Color2Opacity)
 		  
-		  Return RGB(RedAmt, GreenAmt, BlueAmt)
+		  Return Pic.RGBSurface.Pixel(0, 0)
 		End Function
 	#tag EndMethod
 
