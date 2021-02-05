@@ -281,6 +281,18 @@ Protected Module ArtisanKit
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h1
+		Protected Function NearestMultiple(Value As Double, Factor As Double) As Double
+		  // If this is already a whole number, there's no reason for more math.
+		  Var Whole As Integer = Floor(Value)
+		  If Whole = Value Then
+		    Return Value
+		  End If
+		  
+		  Return Round(Value * Factor) / Factor
+		End Function
+	#tag EndMethod
+
 	#tag Method, Flags = &h0
 		Function NewPicture(Extends G As Graphics, Width As Integer, Height As Integer) As Picture
 		  Var Pic As New Picture(Width * G.ScaleX, Height * G.ScaleY)
@@ -359,11 +371,11 @@ Protected Module ArtisanKit
 
 	#tag Note, Name = Documentation
 		
-		Documentation can be found at http://docs.thezaz.com/artisankit/1.2.1
+		Documentation can be found at http://docs.thezaz.com/artisankit/1.2.2
 	#tag EndNote
 
 	#tag Note, Name = Version
-		1.2.1
+		1.2.2
 		
 	#tag EndNote
 
