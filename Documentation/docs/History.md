@@ -1,5 +1,10 @@
 # Version History
 
+## Version 1.2.2 - February 7th, 2021
+
+- Added ArtisanKit.NearestMultiple method to help controls improve drawing sharpness at any scaling factor.
+- Updated ArtisanKit.BlendColors method to improve how colors are blended together. Now possible to blend colors with alpha channels.
+
 ## Version 1.2.1 - January 6th, 2021
 
 - Fixed some event names that Xojo decided not to rename.

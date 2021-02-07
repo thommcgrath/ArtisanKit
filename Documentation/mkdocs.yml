@@ -8,4 +8,3 @@ pages:
 ]
 - Version History: 'History.md'
 theme: mkdocs
-include_next_prev: false
